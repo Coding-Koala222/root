@@ -425,7 +425,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (!exhaustItem(v.items, 'hammer')) return;
         const damaged = v.items.find(i => i.state === 'damaged');
         if (!damaged) return;
-        damaged.state = 'face-up';
+        // §9.5.7: repaired item moves to Satchel face-down (exhausted), not face-up.
+        damaged.state = 'face-down';
+        damaged.exhausted = false;
       });
 
     case 'vagabond.craft':
@@ -686,7 +688,7 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         let repaired = 0;
         for (const it of v.items) {
           if (repaired >= 3) break;
-          if (it.state === 'damaged') { it.state = 'face-up'; repaired += 1; }
+          if (it.state === 'damaged') { it.state = 'face-down'; it.exhausted = false; repaired += 1; }
         }
         v.daylightActionsLeft = 0;
         draft.phase = 'evening';
