@@ -6,7 +6,6 @@ import { startGame, checkVictory } from '../engine/loop';
 import { performSetup } from '../engine/setup';
 import { checkCoalitionVictory } from '../engine/factions/vagabond/reducer';
 import type { VagabondCharacter } from '../engine/factions/vagabond/state';
-import { STARTING_ITEMS } from '../engine/factions/vagabond/state';
 import { pickAction } from '../bots/bot';
 
 const SAVE_KEY = 'root-save-v1';
@@ -111,11 +110,9 @@ export const useGame = create<Store>((set, get) => ({
     if (opts?.vagabondCharacter) {
       base = produce(base, draft => {
         if (draft.factions.vagabond) {
+          // Only set the character; setupVagabond() will add the correct starting items.
           draft.factions.vagabond.character = opts.vagabondCharacter!;
           draft.factions.vagabond.items = [];
-          for (const kind of STARTING_ITEMS[opts.vagabondCharacter!]) {
-            draft.factions.vagabond.items.push({ kind, state: 'face-up', exhausted: false });
-          }
         }
       });
     }

@@ -570,6 +570,20 @@ export function ActionBar({ state, playerFaction, dispatch, onBegin, mapIntent, 
         <button className="btn ghost small undo-btn" onClick={onUndo}>↩ Undo</button>
       )}
 
+      {active === 'vagabond' && state.factions.vagabond && (
+        <div className="actionbar-available-items">
+          {([ ['boots','👢'], ['sword','⚔'], ['hammer','🔨'], ['torch','🔦'], ['crossbow','🏹'] ] as [string,string][])
+            .map(([kind, icon]) => {
+              const n = state.factions.vagabond!.items.filter(i => i.kind === kind && i.state === 'face-up' && !i.exhausted).length;
+              return n > 0 ? (
+                <span key={kind} className="vagabond-avail-item" title={`${n} ${kind} ready`}>
+                  {icon}{n > 1 && <span className="vagabond-avail-count">×{n}</span>}
+                </span>
+              ) : null;
+            })}
+        </div>
+      )}
+
       {state.phase === 'daylight' && active === 'marquise' && state.factions.marquise && (
         <div className="actionbar-counter">
           Actions left: <strong>{state.factions.marquise.daylightActionsLeft}</strong>
