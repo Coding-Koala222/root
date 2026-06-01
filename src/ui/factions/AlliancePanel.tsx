@@ -3,6 +3,7 @@
 
 import type { GameState, Action } from '../../engine/types';
 import { CraftedCards } from './CraftedCards';
+import { DominanceBadge } from './DominanceBadge';
 
 interface Props {
   state: GameState;
@@ -20,6 +21,7 @@ export function AlliancePanel({ state, isHuman: _isHuman }: Props) {
       <div className="alliance-supporters-line">
         Supporters: <strong>{a.supporters.length}</strong>
       </div>
+      <DominanceBadge state={state} faction="alliance" />
       <CraftedCards state={state} faction="alliance" />
     </div>
   );

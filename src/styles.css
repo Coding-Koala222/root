@@ -829,6 +829,10 @@ body { background: var(--bg); color: var(--paper); }
 .faction-panel.vagabond { border-color: #b8a37a; }
 .faction-stats { display: flex; gap: 10px; font-size: 11px; color: #cfc2a8; flex-wrap: wrap; margin-bottom: 3px; }
 .faction-stats strong { color: #f0e2c2; font-weight: 700; }
+.dominance-badge { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 4px 6px; border: 1px solid; border-radius: 4px; font-size: 11px; background: rgba(0,0,0,0.2); }
+.dominance-badge-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dominance-badge-label { font-weight: 700; }
+.dominance-badge-hint { font-size: 10px; margin-left: auto; }
 .crafted-cards { margin-top: 6px; border-top: 1px solid var(--rule); padding-top: 5px; position: relative; }
 .crafted-cards-title { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: #b8a37a; margin-bottom: 4px; text-transform: uppercase; }
 .crafted-cards-list { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }

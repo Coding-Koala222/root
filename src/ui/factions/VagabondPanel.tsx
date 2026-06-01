@@ -4,6 +4,7 @@ import { activeFaction } from '../../engine/loop';
 import { AUTUMN_MAP } from '../../engine/map';
 import { QUEST_DECK, getQuest } from '../../engine/factions/vagabond/quests';
 import { CraftedCards } from './CraftedCards';
+import { DominanceBadge } from './DominanceBadge';
 
 interface Props {
   state: GameState;
@@ -215,6 +216,7 @@ export function VagabondPanel({ state, isHuman, dispatch }: Props) {
         </div>
       )}
 
+      <DominanceBadge state={state} faction="vagabond" />
       <CraftedCards state={state} faction="vagabond" />
     </div>
   );

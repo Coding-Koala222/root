@@ -7,6 +7,7 @@ import { getCard } from '../../engine/cards';
 import { activeFaction } from '../../engine/loop';
 import type { DecreeSlot, EyrieLeader } from '../../engine/factions/eyrie/state';
 import { CraftedCards } from './CraftedCards';
+import { DominanceBadge } from './DominanceBadge';
 
 const LEADER_VIZIERS: Record<EyrieLeader, string> = {
   despot:      'Move + Build',
@@ -125,6 +126,7 @@ export function EyriePanel({ state, isHuman, dispatch: _dispatch }: Props) {
           </div>
         </div>
       )}
+      <DominanceBadge state={state} faction="eyrie" />
       <CraftedCards state={state} faction="eyrie" />
     </div>
   );

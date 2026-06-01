@@ -1,5 +1,6 @@
 import type { GameState, Action } from '../../engine/types';
 import { CraftedCards } from './CraftedCards';
+import { DominanceBadge } from './DominanceBadge';
 
 interface Props {
   state: GameState;
@@ -25,6 +26,7 @@ export function MarquisePanel({ state }: Props) {
         <span>Workshops: <strong>{m.buildings.workshop}/6</strong></span>
         <span>Recruiters: <strong>{m.buildings.recruiter}/6</strong></span>
       </div>
+      <DominanceBadge state={state} faction="marquise" />
       <CraftedCards state={state} faction="marquise" />
     </div>
   );
