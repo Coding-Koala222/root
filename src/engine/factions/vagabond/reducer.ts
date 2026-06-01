@@ -49,15 +49,19 @@ const TRACK_LIMIT = 3;
 
 /** Max items allowed in satchel + damaged box. §9.4.5: 3 base + 1 per face-up Bag on the Refresh track. */
 function itemCapacity(items: { kind: ItemKind; state: string }[]): number {
-  // Satchel capacity = 3 base + 1 per face-up Bag.
-  // Only face-down (satchel) and damaged items count against this limit;
-  // face-up track items (tea, coin, bag) do not count.
+  // Capacity = 3 base + 1 per face-up Bag.
+  // Counts against capacity: damaged items + face-up items that are not tea or bag.
   const faceUpBagCount = items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
   return 3 + faceUpBagCount;
 }
 
-function satchelAndDamagedCount(items: { state: string }[]): number {
-  return items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
+/** Items that count toward capacity: damaged items (any kind) +
+ *  face-up items that are not tea or bag (those sit on their own tracks). */
+function capacityUsed(items: { kind: ItemKind; state: string }[]): number {
+  return items.filter(i =>
+    i.state === 'damaged' ||
+    (i.state === 'face-up' && i.kind !== 'tea' && i.kind !== 'bag'),
+  ).length;
 }
 
 
@@ -583,9 +587,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: drew ${draws}, must discard ${cardExcess} (limit ${limit}).` });
           return;
         }
-        // Check item capacity: only satchel (face-down) + damaged count against capacity.
+        // Check item capacity: damaged + face-up non-tea non-bag count against capacity.
         const capacity = itemCapacity(v.items);
-        const itemExcess = satchelAndDamagedCount(v.items) - capacity;
+        const itemExcess = capacityUsed(v.items) - capacity;
         if (itemExcess > 0) {
           v.pendingItemRemoval = itemExcess;
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: item capacity ${capacity}, must permanently remove ${itemExcess} item(s) from satchel/damaged.` });
@@ -600,10 +604,13 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (v.pendingItemRemoval <= 0) return;
         const item = v.items[a.itemIdx];
         if (!item) return;
-        if (item.state !== 'face-down' && item.state !== 'damaged') return;
+        // Can remove any item that counts toward capacity.
+        const removable = item.state === 'damaged' ||
+          (item.state === 'face-up' && item.kind !== 'tea' && item.kind !== 'bag');
+        if (!removable) return;
         v.items.splice(a.itemIdx, 1);
         v.pendingItemRemoval -= 1;
-        draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Permanently removed ${item.kind} from ${item.state === 'face-down' ? 'satchel' : 'damaged box'}.` });
+        draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Permanently removed ${item.kind} (${item.state}).` });
         if (v.pendingItemRemoval === 0) finishVagabondTurn(draft, 0);
       });
 
@@ -772,7 +779,7 @@ export function vagabondLegalActions(state: GameState): Action[] {
   // Pending discard / item removal gates everything else, regardless of phase
   if (v.pendingItemRemoval > 0) {
     v.items.forEach((item, idx) => {
-      if (item.state === 'face-down' || item.state === 'damaged') {
+      if (item.state === 'damaged' || (item.state === 'face-up' && item.kind !== 'tea' && item.kind !== 'bag')) {
         out.push({ kind: 'vagabond.removeItem', itemIdx: idx });
       }
     });

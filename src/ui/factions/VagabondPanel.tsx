@@ -125,7 +125,10 @@ export function VagabondPanel({ state, isHuman, dispatch }: Props) {
         const faceUpBags = v.items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
         const faceUpTeas = v.items.filter(i => i.kind === 'tea' && i.state === 'face-up').length;
         const cap = 3 + faceUpBags;
-        const used = v.items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
+        const used = v.items.filter(i =>
+          i.state === 'damaged' ||
+          (i.state === 'face-up' && i.kind !== 'tea' && i.kind !== 'bag'),
+        ).length;
         const over = used > cap;
         return (
           <div className={`vagabond-capacity${over ? ' over' : ''}`}>
