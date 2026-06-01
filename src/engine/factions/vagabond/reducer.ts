@@ -49,14 +49,11 @@ const TRACK_LIMIT = 3;
 
 /** Max items allowed in satchel + damaged box. §9.4.5: 3 base + 1 per face-up Bag on the Refresh track. */
 function itemCapacity(items: { kind: ItemKind; state: string }[]): number {
+  // §9.4.5: base capacity 6 items total, +2 per face-up Bag.
   const faceUpBagCount = items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
-  return 3 + faceUpBagCount;
+  return 6 + 2 * faceUpBagCount;
 }
 
-/** Count of items currently in satchel (face-down) or damaged box (damaged). */
-function satchelAndDamagedCount(items: { state: string }[]): number {
-  return items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
-}
 
 /** True if the item can be added (track items are capped at TRACK_LIMIT). */
 function canGainItem(items: { kind: ItemKind }[], kind: ItemKind): boolean {
@@ -478,6 +475,7 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (card.category === 'persistent') draft.craftedPersistents.push({ faction: 'vagabond', cardId: a.cardId });
         if (card.category === 'favor') applyFavor(draft, card.suit, 'vagabond');
         draft.discard.push(a.cardId);
+        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Crafted ${card.name} (+${card.craftVp ?? 0} VP).` });
       });
 
@@ -579,9 +577,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: drew ${draws}, must discard ${cardExcess} (limit ${limit}).` });
           return;
         }
-        // Check item capacity: satchel + damaged items must not exceed capacity.
+        // Check item capacity: total items must not exceed capacity.
         const capacity = itemCapacity(v.items);
-        const itemExcess = satchelAndDamagedCount(v.items) - capacity;
+        const itemExcess = v.items.length - capacity;
         if (itemExcess > 0) {
           v.pendingItemRemoval = itemExcess;
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: item capacity ${capacity}, must permanently remove ${itemExcess} item(s) from satchel/damaged.` });

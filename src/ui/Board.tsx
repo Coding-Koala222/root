@@ -278,10 +278,13 @@ export function Board({ state, playerFaction, dispatch, mapIntent, setMapIntent,
   const forestEnter: Map<string, Action> = new Map();
   const forestSlip: Map<string, Action> = new Map();
   const forestExit: Map<ClearingId, Action> = new Map();
+  // Slip-exit: vagabond.slip actions offered when in a forest (birdsong only)
+  const forestSlipExit: Map<ClearingId, Action> = new Map();
   for (const a of legals) {
     if (a.kind === 'vagabond.enterForest') forestEnter.set(a.forestId, a);
     else if (a.kind === 'vagabond.slipToForest') forestSlip.set(a.forestId, a);
     else if (a.kind === 'vagabond.exitForest') forestExit.set(a.to, a);
+    else if (a.kind === 'vagabond.slip' && state.factions.vagabond?.inForest) forestSlipExit.set(a.to, a);
   }
   const vagabondInForest = state.factions.vagabond?.inForest;
 
@@ -324,9 +327,9 @@ export function Board({ state, playerFaction, dispatch, mapIntent, setMapIntent,
 
     if (!isHuman) return;
 
-    // Vagabond exiting a forest: a click on a bordering clearing leaves.
+    // Vagabond exiting a forest: click a bordering clearing to exit or slip out.
     if (vagabondInForest) {
-      const exit = forestExit.get(id);
+      const exit = forestExit.get(id) ?? forestSlipExit.get(id);
       if (exit) {
         dispatch(exit);
         setInfoClearing(null);
@@ -490,7 +493,7 @@ export function Board({ state, playerFaction, dispatch, mapIntent, setMapIntent,
           const isValidTarget = validTargets.has(c.id);
           const isValidSource = isHuman && selected == null && validSources.has(c.id);
           const isIntentTarget = mapIntent != null && intentTargets.has(c.id);
-          const isForestExit = vagabondInForest != null && forestExit.has(c.id);
+          const isForestExit = vagabondInForest != null && (forestExit.has(c.id) || forestSlipExit.has(c.id));
           // When an intent is armed, clearings that wouldn't satisfy it
           // get dimmed so it's obvious which ones the player can click.
           // Same dimming applies when the Vagabond is in a forest:

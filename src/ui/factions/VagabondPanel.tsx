@@ -114,20 +114,24 @@ export function VagabondPanel({ state, isHuman, dispatch }: Props) {
         <span className="dim"> · quests done</span> {v.completedQuests.length}
       </div>
       <div className="vagabond-item-track" aria-label="Vagabond items">
-        <ItemGroup label="Ready" items={v.items.filter(it => it.state === 'face-up' && !it.exhausted)} stateClass="ready" />
+        <ItemGroup label="Ready" items={v.items.filter(it => it.state === 'face-up' && !it.exhausted && it.kind !== 'tea' && it.kind !== 'bag')} stateClass="ready" />
+        <ItemGroup label="Tea ☕" items={v.items.filter(it => it.kind === 'tea' && it.state === 'face-up' && !it.exhausted)} stateClass="ready" />
+        <ItemGroup label="Bags 🎒" items={v.items.filter(it => it.kind === 'bag' && it.state === 'face-up' && !it.exhausted)} stateClass="ready" />
         <ItemGroup label="Exhausted" items={v.items.filter(it => it.state === 'face-up' && it.exhausted)} stateClass="exhausted" />
         <ItemGroup label="Satchel" items={v.items.filter(it => it.state === 'face-down')} stateClass="satchel" />
         <ItemGroup label="Damaged" items={v.items.filter(it => it.state === 'damaged')} stateClass="damaged" />
       </div>
       {(() => {
-        const TRACK_ITEMS = ['torch', 'crossbow', 'bag'] as const;
-        const faceUpTrack = TRACK_ITEMS.reduce((s, k) => s + v.items.filter(i => i.kind === k && i.state === 'face-up').length, 0);
-        const cap = 6 + 2 * faceUpTrack;
-        const used = v.items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
+        const faceUpBags = v.items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
+        const faceUpTeas = v.items.filter(i => i.kind === 'tea' && i.state === 'face-up').length;
+        const cap = 6 + 2 * faceUpBags;
+        const used = v.items.length;
         const over = used > cap;
         return (
           <div className={`vagabond-capacity${over ? ' over' : ''}`}>
-            <span className="dim">Satchel+Damaged:</span> {used}/{cap}
+            <span className="dim">Items:</span> {used}/{cap}
+            {faceUpTeas > 0 && <span className="dim"> · {faceUpTeas} tea → +{2 * faceUpTeas} refresh</span>}
+            {faceUpBags > 0 && <span className="dim"> · {faceUpBags} bag → +{2 * faceUpBags} capacity</span>}
             {over && <span className="vagabond-capacity-warn"> ⚠ remove {used - cap}</span>}
           </div>
         );

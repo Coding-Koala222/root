@@ -6,6 +6,14 @@ This is a list of bugs and features, sorted by global mechanics or faction.
 
 ### General
 
+### Vagabond
+
+---
+
+## Done
+
+### General
+
 - [x] The card royal dominance require 4 ressources of any kind but you need at least 4 ressources.
   - Already working: `canMeetCraftCost` handles bird wildcard as "any suit"; Royal Claim only requires ruling clearings, not paying resources.
 - [x] Dominance should only be taken into account at the next turn it seems (Check the rules)
@@ -31,8 +39,6 @@ This is a list of bugs and features, sorted by global mechanics or faction.
     - **(d) Taking Hits with Ally** — defender hits damage vagabond items first; overflow removes ally warriors. If ally warriors removed > items damaged in the same battle, that faction becomes Hostile (§9.7.d).
 
 ---
-
-## Done
 
 ### General
 
