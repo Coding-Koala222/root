@@ -48,19 +48,18 @@ const TRACK_ITEMS: readonly ItemKind[] = ['torch', 'crossbow', 'bag'];
 const TRACK_LIMIT = 3;
 
 /** Max items allowed in satchel + damaged box. §9.4.5: 3 base + 1 per face-up Bag on the Refresh track. */
+/** §9.6.4: item limit = 6 + 2 per face-up Bag on the Bag track. */
 function itemCapacity(items: { kind: ItemKind; state: string }[]): number {
-  // Capacity = 3 base + 1 per face-up Bag.
-  // Counts against capacity: damaged items + face-up items that are not tea or bag.
   const faceUpBagCount = items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
-  return 3 + faceUpBagCount;
+  return 6 + 2 * faceUpBagCount;
 }
 
-/** Items that count toward capacity: damaged items (any kind) +
- *  face-up items that are not tea or bag (those sit on their own tracks). */
+/** §9.6.4: counts items in Satchel (face-up non-track + face-down) and Damaged box.
+ *  Face-up tea, coin, and bag are on their own tracks and do NOT count. */
 function capacityUsed(items: { kind: ItemKind; state: string }[]): number {
+  const TRACK_KINDS: ItemKind[] = ['tea', 'coin', 'bag'];
   return items.filter(i =>
-    i.state === 'damaged' ||
-    (i.state === 'face-up' && i.kind !== 'tea' && i.kind !== 'bag'),
+    !(i.state === 'face-up' && TRACK_KINDS.includes(i.kind)),
   ).length;
 }
 
@@ -460,18 +459,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         const hammersNeeded = costEntries.reduce((s, [, n]) => s + n, 0);
         const suitOk = costEntries.every(([s]) => s === 'bird' || s === meta.suit);
         if (!suitOk || hammersNeeded === 0) return;
-        // Tinker (Tinkerer) may exhaust any face-up items; others must use hammers.
-        if (v.character === 'tinker') {
-          let remaining = hammersNeeded;
-          for (const it of v.items) {
-            if (remaining <= 0) break;
-            if (it.state === 'face-up' && !it.exhausted) { it.exhausted = true; remaining -= 1; }
-          }
-          if (remaining > 0) return; // not enough items
-        } else {
-          for (let h = 0; h < hammersNeeded; h++) {
-            if (!exhaustItem(v.items, 'hammer')) return;
-          }
+        // §9.5.8: exhaust one hammer per crafting icon (applies to all characters).
+        for (let h = 0; h < hammersNeeded; h++) {
+          if (!exhaustItem(v.items, 'hammer')) return;
         }
         const idx = draft.hands.vagabond.indexOf(a.cardId);
         if (idx < 0) return;
@@ -604,10 +594,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (v.pendingItemRemoval <= 0) return;
         const item = v.items[a.itemIdx];
         if (!item) return;
-        // Can remove any item that counts toward capacity.
-        const removable = item.state === 'damaged' ||
-          (item.state === 'face-up' && item.kind !== 'tea' && item.kind !== 'bag');
-        if (!removable) return;
+        // Can remove any item in Satchel or Damaged box (not face-up track items).
+        const isTrack = item.state === 'face-up' && (['tea', 'coin', 'bag'] as string[]).includes(item.kind);
+        if (isTrack) return;
         v.items.splice(a.itemIdx, 1);
         v.pendingItemRemoval -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Permanently removed ${item.kind} (${item.state}).` });
@@ -779,9 +768,9 @@ export function vagabondLegalActions(state: GameState): Action[] {
   // Pending discard / item removal gates everything else, regardless of phase
   if (v.pendingItemRemoval > 0) {
     v.items.forEach((item, idx) => {
-      if (item.state === 'damaged' || (item.state === 'face-up' && item.kind !== 'tea' && item.kind !== 'bag')) {
-        out.push({ kind: 'vagabond.removeItem', itemIdx: idx });
-      }
+      // Can remove any item in Satchel (face-up or face-down non-track) or Damaged box.
+      const isTrack = item.state === 'face-up' && (['tea', 'coin', 'bag'] as string[]).includes(item.kind);
+      if (!isTrack) out.push({ kind: 'vagabond.removeItem', itemIdx: idx });
     });
     return out;
   }
@@ -943,11 +932,8 @@ export function vagabondLegalActions(state: GameState): Action[] {
         const damaged = v.items.find(i => i.state === 'damaged')!;
         out.push({ kind: 'vagabond.repair', itemKind: damaged.kind });
       }
-      // Craft — Tinker may use any face-up items; others must use hammers.
-      // Each item/hammer gives 1 power of the clearing's suit; bird-cost cards accept any suit.
-      const availableCraftPower = v.character === 'tinker'
-        ? v.items.filter(i => i.state === 'face-up' && !i.exhausted).length
-        : v.items.filter(i => i.kind === 'hammer' && i.state === 'face-up' && !i.exhausted).length;
+      // Craft §9.5.8: exhaust one hammer per crafting icon (all characters).
+      const availableCraftPower = v.items.filter(i => i.kind === 'hammer' && i.state === 'face-up' && !i.exhausted).length;
       if (availableCraftPower > 0) {
         for (const cardId of state.hands.vagabond) {
           const card = getCard(cardId);
