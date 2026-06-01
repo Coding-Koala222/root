@@ -49,9 +49,15 @@ const TRACK_LIMIT = 3;
 
 /** Max items allowed in satchel + damaged box. §9.4.5: 3 base + 1 per face-up Bag on the Refresh track. */
 function itemCapacity(items: { kind: ItemKind; state: string }[]): number {
-  // §9.4.5: base capacity 6 items total, +2 per face-up Bag.
+  // Satchel capacity = 3 base + 1 per face-up Bag.
+  // Only face-down (satchel) and damaged items count against this limit;
+  // face-up track items (tea, coin, bag) do not count.
   const faceUpBagCount = items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
-  return 6 + 2 * faceUpBagCount;
+  return 3 + faceUpBagCount;
+}
+
+function satchelAndDamagedCount(items: { state: string }[]): number {
+  return items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
 }
 
 
@@ -577,9 +583,9 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: drew ${draws}, must discard ${cardExcess} (limit ${limit}).` });
           return;
         }
-        // Check item capacity: total items must not exceed capacity.
+        // Check item capacity: only satchel (face-down) + damaged count against capacity.
         const capacity = itemCapacity(v.items);
-        const itemExcess = v.items.length - capacity;
+        const itemExcess = satchelAndDamagedCount(v.items) - capacity;
         if (itemExcess > 0) {
           v.pendingItemRemoval = itemExcess;
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Evening: item capacity ${capacity}, must permanently remove ${itemExcess} item(s) from satchel/damaged.` });

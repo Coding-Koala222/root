@@ -124,14 +124,14 @@ export function VagabondPanel({ state, isHuman, dispatch }: Props) {
       {(() => {
         const faceUpBags = v.items.filter(i => i.kind === 'bag' && i.state === 'face-up').length;
         const faceUpTeas = v.items.filter(i => i.kind === 'tea' && i.state === 'face-up').length;
-        const cap = 6 + 2 * faceUpBags;
-        const used = v.items.length;
+        const cap = 3 + faceUpBags;
+        const used = v.items.filter(i => i.state === 'face-down' || i.state === 'damaged').length;
         const over = used > cap;
         return (
           <div className={`vagabond-capacity${over ? ' over' : ''}`}>
-            <span className="dim">Items:</span> {used}/{cap}
-            {faceUpTeas > 0 && <span className="dim"> · {faceUpTeas} tea → +{2 * faceUpTeas} refresh</span>}
-            {faceUpBags > 0 && <span className="dim"> · {faceUpBags} bag → +{2 * faceUpBags} capacity</span>}
+            <span className="dim">Satchel:</span> {used}/{cap}
+            {faceUpTeas > 0 && <span className="dim"> · {faceUpTeas} ☕ → +{2 * faceUpTeas} refresh/turn</span>}
+            {faceUpBags > 0 && <span className="dim"> · {faceUpBags} 🎒 → +{faceUpBags} satchel slot{faceUpBags > 1 ? 's' : ''}</span>}
             {over && <span className="vagabond-capacity-warn"> ⚠ remove {used - cap}</span>}
           </div>
         );

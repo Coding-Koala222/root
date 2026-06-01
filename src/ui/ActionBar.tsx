@@ -682,7 +682,7 @@ export function ActionBar({ state, playerFaction, dispatch, onBegin, mapIntent, 
         const showDayLabor         = g === 'main'     && dayLaborCards.size > 0;
         const showAidItemTake      = g === 'main'     && (aidItemTakeItems.size > 0 || canSkipAidItem);
         const showDiscard          = g === 'end'      && discardCardIds.size > 0;
-        const showRemoveItem       = g === 'end'      && removeItemIdxs.length > 0;
+        const showRemoveItem       = g === 'main'     && removeItemIdxs.length > 0;
         const showPayRelationship  = g === 'main'     && (payRelCostCards.size > 0 || canAcceptHostility);
         const showOutrage          = g === 'main'     && (outragePayCards.size > 0 || outrageAutoResolve);
         const showEyrieDecree      = g === 'birdsong' && eyrieDecreeLegals.length > 0;
