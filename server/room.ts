@@ -8,7 +8,6 @@ import { startGame, checkVictory } from '../src/engine/loop';
 import { performSetup } from '../src/engine/setup';
 import { checkCoalitionVictory } from '../src/engine/factions/vagabond/reducer';
 import type { VagabondCharacter } from '../src/engine/factions/vagabond/state';
-import { STARTING_ITEMS } from '../src/engine/factions/vagabond/state';
 import { pickAction } from '../src/bots/bot';
 import { produce } from 'immer';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
@@ -263,11 +262,9 @@ export class Room {
     let base = newGame({ seed: Math.floor(Math.random() * 1e9) });
     base = produce(base, draft => {
       if (draft.factions.vagabond) {
+        // Only set the character; setupVagabond() will add the correct starting items.
         draft.factions.vagabond.character = this.vagabondCharacter;
         draft.factions.vagabond.items = [];
-        for (const kind of STARTING_ITEMS[this.vagabondCharacter]) {
-          draft.factions.vagabond.items.push({ kind, state: 'face-up', exhausted: false });
-        }
       }
     });
     this.state = startGame(performSetup(base));
