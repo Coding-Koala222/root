@@ -135,7 +135,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (v.inForest) {
           if (!adjacentForests(AUTUMN_MAP, v.inForest).includes(a.forestId)) return;
           if (!exhaustItem(v.items, 'boots')) return;
@@ -146,7 +145,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           draft.map.clearings[v.clearing]!.vagabondHere = false;
           v.inForest = a.forestId;
         }
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Entered forest ${a.forestId}.` });
       });
 
@@ -154,7 +152,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (!v.inForest) return;
         const f = getForest(AUTUMN_MAP, v.inForest);
         if (!f.clearings.includes(a.to)) return;
@@ -172,7 +169,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         v.inForest = undefined;
         v.clearing = a.to;
         draft.map.clearings[a.to]!.vagabondHere = true;
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Exited forest → clearing ${a.to}.` });
       });
 
@@ -188,7 +184,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (!getAdjacent(AUTUMN_MAP, v.clearing).includes(a.to)) return;
         if (!exhaustItem(v.items, 'boots')) return;
         // Hostile destination: exhaust extra boot — Thief (Nimble) is exempt.
@@ -205,7 +200,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         draft.map.clearings[from]!.vagabondHere = false;
         v.clearing = a.to;
         draft.map.clearings[a.to]!.vagabondHere = true;
-        v.daylightActionsLeft -= 1;
         // §9.7.b Moving with Ally: if an allied faction has warriors at the source
         // clearing, offer to bring them along.
         for (const f of ['marquise', 'eyrie', 'alliance'] as const) {
@@ -239,7 +233,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         const meta = AUTUMN_MAP.clearings.find(c => c.id === v.clearing)!;
         if (!meta.hasRuin) return;
         if (v.exploredRuins.includes(v.clearing)) return;
@@ -256,7 +249,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         const itemState = canGainItem(v.items, itemKind) ? 'face-up' : 'face-down';
         v.items.push({ kind: itemKind, state: itemState, exhausted: false });
         draft.scores.vagabond += 1;
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Explored ruin in clearing ${v.clearing} — found ${itemKind}! (+1 VP)` });
       });
 
@@ -264,7 +256,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (v.inForest) return;
         if (a.clearing !== v.clearing) return;
         if (!exhaustItem(v.items, 'sword')) return;
@@ -323,7 +314,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           v.relationships[a.allyFaction] = 'hostile';
           draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `${a.allyFaction} became hostile — more ally warriors lost than vagabond items damaged (§9.7.d).` });
         }
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Battled ${a.defender}${a.allyFaction ? ` (with ${a.allyFaction} ally)` : ''}: rolled [${d1},${d2}] → dealt ${attHits} hit(s), took ${defHits} hit(s).` });
       });
 
@@ -331,7 +321,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         const meta = AUTUMN_MAP.clearings.find(c => c.id === v.clearing)!;
         const card = getCard(a.cardId);
         if (card.suit !== meta.suit && card.suit !== 'bird') return;
@@ -353,7 +342,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         // Otherwise score VP equal to the numeric relationship level reached.
         const aidVp = wasAllied ? 2 : aidVpForRelationship(v.relationships[a.faction]);
         if (aidVp > 0) draft.scores.vagabond += aidVp;
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Aided ${a.faction} (exhausted ${a.itemKind}); relationship → ${v.relationships[a.faction]}${aidVp > 0 ? ` (+${aidVp} VP)` : ''}.` });
         // If the faction has crafted items the Vagabond may take one.
         const hasCraftedItems = draft.craftedItemLog.some(e => e.faction === a.faction);
@@ -369,7 +357,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
         if (v.character !== 'thief') return;
-        if (v.daylightActionsLeft <= 0) return;
         if (v.relationships[a.faction] !== 'hostile') return;
         if (draft.hands[a.faction].length === 0) return;
         const cl = draft.map.clearings[v.clearing]!;
@@ -387,7 +374,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         v.relationships[a.faction] = bumpRelationship(v.relationships[a.faction]);
         const stealVp = aidVpForRelationship(v.relationships[a.faction]);
         if (stealVp > 0) draft.scores.vagabond += stealVp;
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Thief stole a card from ${a.faction} (exhausted ${a.itemKind}); relationship → ${v.relationships[a.faction]}${stealVp > 0 ? ` (+${stealVp} VP)` : ''}.` });
       });
 
@@ -397,10 +383,8 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
         if (v.character !== 'ranger') return;
-        if (v.daylightActionsLeft <= 0) return;
         if (v.inForest) return;
         v.hideout = v.clearing;
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Ranger placed Hideout at clearing ${v.clearing}.` });
       });
 
@@ -408,7 +392,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (a.clearing !== v.clearing) return;
         if (!exhaustItem(v.items, 'crossbow')) return;
         const clS = draft.map.clearings[v.clearing]!;
@@ -432,7 +415,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
           const metaS = AUTUMN_MAP.clearings.find(c => c.id === v.clearing)!;
           v.pendingRelationshipCost = { faction: a.faction, suit: metaS.suit as CardSuit };
         }
-        v.daylightActionsLeft -= 1;
       });
 
     case 'vagabond.repair':
@@ -475,7 +457,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (card.category === 'persistent') draft.craftedPersistents.push({ faction: 'vagabond', cardId: a.cardId });
         if (card.category === 'favor') applyFavor(draft, card.suit, 'vagabond');
         draft.discard.push(a.cardId);
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Crafted ${card.name} (+${card.craftVp ?? 0} VP).` });
       });
 
@@ -483,7 +464,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
-        if (v.daylightActionsLeft <= 0) return;
         if (!v.questDisplay.includes(a.questId)) return;
         const quest = getQuest(a.questId);
         const meta = AUTUMN_MAP.clearings.find(c => c.id === v.clearing)!;
@@ -499,7 +479,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         v.questDisplay = v.questDisplay.filter(id => id !== a.questId);
         if (v.questDeck.length > 0) v.questDisplay.push(v.questDeck.shift()!);
         v.completedQuests.push(a.questId);
-        v.daylightActionsLeft -= 1;
         v.pendingQuestReward = a.questId;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Completed quest ${a.questId}. Choose reward: draw 2 cards or score VP.` });
       });
@@ -646,7 +625,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
         if (v.character !== 'tinker') return;
-        if (v.daylightActionsLeft <= 0) return;
         if (!exhaustItem(v.items, 'torch')) return;
         const idx = draft.discard.indexOf(a.cardId);
         if (idx < 0) return;
@@ -655,7 +633,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (card.suit !== meta.suit && card.suit !== 'bird') return;
         draft.discard.splice(idx, 1);
         draft.hands.vagabond.push(a.cardId);
-        v.daylightActionsLeft -= 1;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Tinker Day Labor: took ${card.name} from discard.` });
       });
 
@@ -704,7 +681,6 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
         if (v.character !== 'ranger') return;
-        if (v.daylightActionsLeft <= 0) return;
         if (!exhaustItem(v.items, 'torch')) return;
         let repaired = 0;
         for (const it of v.items) {
@@ -820,7 +796,7 @@ export function vagabondLegalActions(state: GameState): Action[] {
     out.push({ kind: 'vagabond.completeQuestReward', questId: v.pendingQuestReward, choice: 'vp' });
     return out;
   }
-  if (state.phase === 'daylight' && v.daylightActionsLeft > 0) {
+  if (state.phase === 'daylight') {
     // Pending relationship cost must be resolved before any other action.
     if (v.pendingRelationshipCost) {
       const { suit } = v.pendingRelationshipCost;

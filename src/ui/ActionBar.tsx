@@ -580,11 +580,17 @@ export function ActionBar({ state, playerFaction, dispatch, onBegin, mapIntent, 
           Actions left: <strong>{state.factions.alliance.daylightActionsLeft}</strong>
         </div>
       )}
-      {state.phase === 'daylight' && active === 'vagabond' && state.factions.vagabond && (
-        <div className="actionbar-counter">
-          Actions left: <strong>{state.factions.vagabond.daylightActionsLeft}</strong>
-        </div>
-      )}
+      {state.phase === 'daylight' && active === 'vagabond' && state.factions.vagabond && (() => {
+        const v = state.factions.vagabond;
+        const boots = v.items.filter(i => i.kind === 'boots' && i.state === 'face-up' && !i.exhausted).length;
+        const swords = v.items.filter(i => i.kind === 'sword' && i.state === 'face-up' && !i.exhausted).length;
+        const hammers = v.items.filter(i => i.kind === 'hammer' && i.state === 'face-up' && !i.exhausted).length;
+        return (
+          <div className="actionbar-counter">
+            Items: 👢{boots} ⚔{swords} 🔨{hammers}
+          </div>
+        );
+      })()}
 
       {active === 'alliance' && state.factions.alliance && (state.phase === 'birdsong' || state.phase === 'daylight') && (() => {
         const al = state.factions.alliance!;
