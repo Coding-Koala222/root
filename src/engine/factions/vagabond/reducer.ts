@@ -378,12 +378,13 @@ export function vagabondReducer(state: GameState, action: Action): GameState {
       });
 
     case 'vagabond.placeHideout':
-      // Ranger only: place a Hideout camp token in current clearing (costs 1 daylight action).
+      // Ranger only: place a Hideout camp token in current clearing (exhausts 1 torch).
       return produce(state, draft => {
         if (draft.phase !== 'daylight') return;
         const v = draft.factions.vagabond!;
         if (v.character !== 'ranger') return;
         if (v.inForest) return;
+        if (!exhaustItem(v.items, 'torch')) return;
         v.hideout = v.clearing;
         draft.log.push({ turn: draft.turn, faction: 'vagabond', message: `Ranger placed Hideout at clearing ${v.clearing}.` });
       });
@@ -922,8 +923,8 @@ export function vagabondLegalActions(state: GameState): Action[] {
           if (suitOk) out.push({ kind: 'vagabond.craft', cardId });
         }
       }
-      // Ranger: place Hideout camp in current clearing.
-      if (v.character === 'ranger') {
+      // Ranger: place Hideout camp in current clearing (costs 1 torch).
+      if (v.character === 'ranger' && findItem(v.items, 'torch')) {
         out.push({ kind: 'vagabond.placeHideout' });
       }
       // Tinker Day Labor: exhaust 1 torch → take a matching card from discard.

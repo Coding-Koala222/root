@@ -113,6 +113,26 @@ export function VagabondPanel({ state, isHuman, dispatch }: Props) {
         <span className="dim"> · ruins</span> {v.exploredRuins.length}/4
         <span className="dim"> · quests done</span> {v.completedQuests.length}
       </div>
+      {(() => {
+        const ready = (kind: string) => v.items.filter(i => i.kind === kind && i.state === 'face-up' && !i.exhausted).length;
+        const items: Array<[string, string, number]> = [
+          ['boots', '👢', ready('boots')],
+          ['sword', '⚔', ready('sword')],
+          ['hammer', '🔨', ready('hammer')],
+          ['torch', '🔦', ready('torch')],
+          ['crossbow', '🏹', ready('crossbow')],
+        ].filter(([,,n]) => (n as number) > 0) as Array<[string, string, number]>;
+        if (items.length === 0) return null;
+        return (
+          <div className="vagabond-available-items">
+            {items.map(([kind, icon, n]) => (
+              <span key={kind} className="vagabond-avail-item" title={`${n} ${kind}${n > 1 ? 's' : ''} ready`}>
+                {icon}{n > 1 && <span className="vagabond-avail-count">×{n}</span>}
+              </span>
+            ))}
+          </div>
+        );
+      })()}
       <div className="vagabond-item-track" aria-label="Vagabond items">
         <ItemGroup label="Ready" items={v.items.filter(it => it.state === 'face-up' && !it.exhausted && it.kind !== 'tea' && it.kind !== 'bag')} stateClass="ready" />
         <ItemGroup label="Tea ☕" items={v.items.filter(it => it.kind === 'tea' && it.state === 'face-up' && !it.exhausted)} stateClass="ready" />
