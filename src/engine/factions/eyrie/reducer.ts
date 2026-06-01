@@ -464,7 +464,10 @@ export function eyrieLegalActions(state: GameState): Action[] {
         out.push({ kind: 'eyrie.chooseLeader', leader });
       }
     }
-    out.push({ kind: 'eyrie.endBirdsong' });
+    // Must add at least 1 decree card and choose a leader before ending birdsong.
+    if (!e.needsLeaderChoice && e.cardsAddedThisBirdsong >= 1) {
+      out.push({ kind: 'eyrie.endBirdsong' });
+    }
   }
   if (state.phase === 'daylight' && e.roosts.length > 0) {
     // Craft using roost power — available throughout daylight, independent of Decree.
