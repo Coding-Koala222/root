@@ -13,91 +13,91 @@
 //   src/assets/raw/items/<item>.png                  → 'sword', 'boots', etc.
 //   src/assets/raw/dominance/<suit>.png              → 'fox', 'mouse', etc.
 
-import type { Faction, ItemKind, Suit } from '../engine/types';
-import type { Card } from '../engine/cards';
+import type { Faction, ItemKind, Suit } from "../engine/types";
+import type { Card } from "../engine/cards";
 
 // ─── Leder Games CDN ────────────────────────────────────────────────────────
 // Official card images served by Leder Games at cards.ledergames.com.
 // Priority: raw/ (private scans) → CDN → builtin/ SVGs.
 
-const CDN = 'https://ledercards.netlify.app/cards/root/en-US';
+const CDN = "https://ledercards.netlify.app/cards/root/en-US";
 
 // Maps our engine card names to CDN filenames (without .webp extension).
 // Only base-game shared-deck cards are included; unmapped cards fall through
 // to builtin SVGs (text-only rendering).
 const CDN_CARD_MAP: Readonly<Record<string, string>> = {
   // Ambushes
-  'Ambush! (fox)':          'card-ambushfox',
-  'Ambush! (mouse)':        'card-ambushmouse',
-  'Ambush! (rabbit)':       'card-ambushbunny',
-  'Ambush! (bird)':         'card-ambushbird',
+  "Ambush! (fox)": "card-ambushfox",
+  "Ambush! (mouse)": "card-ambushmouse",
+  "Ambush! (rabbit)": "card-ambushbunny",
+  "Ambush! (bird)": "card-ambushbird",
   // Persistents
-  'Armorers':               'card-armorers',
-  'Brutal Tactics':         'card-brutaltactics',
-  'Royal Claim':            'card-royalclaim',
-  'Sappers':                'card-sappers',
-  'Scouting Party':         'card-scoutingparty',
-  'Codebreakers':           'card-codebreakers',
-  'Tax Collector':          'card-taxcollector',
-  'Cobbler':                'card-cobbler',
-  'Command Warren':         'card-commandwarren',
-  'Better Burrow Bank':     'card-betterburrowbank',
-  'Stand and Deliver!':     'card-standanddeliver',
+  Armorers: "card-armorers",
+  "Brutal Tactics": "card-brutaltactics",
+  "Royal Claim": "card-royalclaim",
+  Sappers: "card-sappers",
+  "Scouting Party": "card-scoutingparty",
+  Codebreakers: "card-codebreakers",
+  "Tax Collector": "card-taxcollector",
+  Cobbler: "card-cobbler",
+  "Command Warren": "card-commandwarren",
+  "Better Burrow Bank": "card-betterburrowbank",
+  "Stand and Deliver!": "card-standanddeliver",
   // Favors
-  'Favor of the Foxes':     'card-favorofthefoxes',
-  'Favor of the Mice':      'card-favorofthemice',
-  'Favor of the Rabbits':   'card-favoroftherabbits',
+  "Favor of the Foxes": "card-favorofthefoxes",
+  "Favor of the Mice": "card-favorofthemice",
+  "Favor of the Rabbits": "card-favoroftherabbits",
   // Item cards
-  'Foxfolk Steel':          'card-foxfolksteel',
-  'Arms Trader':            'card-armstrader',
-  'Sword':                  'card-sword',
-  'Crossbow (bird)':        'card-crossbowbird',
-  'Crossbow (mouse)':       'card-crossbowmouse',
-  'A Visit to Friends':     'card-avisittofriends',
-  'Travel Gear (fox)':      'card-travelgearfox',
-  'Travel Gear (mouse)':    'card-travelgearmouse',
-  'Gently Used Knapsack':   'card-gentlyusedknapsack',
-  'Root Tea (rabbit)':      'card-rootteabunny',
-  'Root Tea (fox)':         'card-rootteafox',
-  'Root Tea (mouse)':       'card-rootteamouse',
-  'Anvil':                  'card-anvil',
-  'Investments':            'card-investments',
-  'Mouse-in-a-Sack':        'card-mouseinasack',
-  'Birdy Bindle':           'card-birdybindle',
-  'Smuggler\'s Trail':      'card-smugglerstrail',
-  'Bake Sale':              'card-bakesale',
-  'Protection Racket':      'card-protectionracket',
-  'Woodland Runners':       'card-woodlandrunners',
+  "Foxfolk Steel": "card-foxfolksteel",
+  "Arms Trader": "card-armstrader",
+  Sword: "card-sword",
+  "Crossbow (bird)": "card-crossbowbird",
+  "Crossbow (mouse)": "card-crossbowmouse",
+  "A Visit to Friends": "card-avisittofriends",
+  "Travel Gear (fox)": "card-travelgearfox",
+  "Travel Gear (mouse)": "card-travelgearmouse",
+  "Gently Used Knapsack": "card-gentlyusedknapsack",
+  "Root Tea (rabbit)": "card-rootteabunny",
+  "Root Tea (fox)": "card-rootteafox",
+  "Root Tea (mouse)": "card-rootteamouse",
+  Anvil: "card-anvil",
+  Investments: "card-investments",
+  "Mouse-in-a-Sack": "card-mouseinasack",
+  "Birdy Bindle": "card-birdybindle",
+  "Smuggler's Trail": "card-smugglerstrail",
+  "Bake Sale": "card-bakesale",
+  "Protection Racket": "card-protectionracket",
+  "Woodland Runners": "card-woodlandrunners",
   // Eyrie Emigre (Eyrie faction card sometimes shuffled in)
-  'Eyrie Emigre':           'card-eyrieemigre',
+  "Eyrie Emigre": "card-eyrieemigre",
   // Dominance cards (separate deck, but rendered the same way)
-  'Dominance · Foxes':      'card-dominancefox',
-  'Dominance · Mice':       'card-dominancemouse',
-  'Dominance · Rabbits':    'card-dominancebunny',
-  'Dominance · Birds':      'card-dominancebird',
+  "Dominance · Foxes": "card-dominancefox",
+  "Dominance · Mice": "card-dominancemouse",
+  "Dominance · Rabbits": "card-dominancebunny",
+  "Dominance · Birds": "card-dominancebird",
   // October 2025 new persistent cards
-  'Apprentice':             'card-apprentice',
-  'Bold Leadership':        'card-boldleadership',
-  'Brazen Demagogue':       'card-brazendemagogue',
-  'Feather Rufflers':       'card-featherrufflers',
-  'Fox Squires':            'card-foxsquires',
-  'Friend of the Foxes':    'card-friendofthefoxes',
-  'Friend of the Mice':     'card-friendofthemice',
-  'Friend of the Rabbits':  'card-friendoftherabbits',
-  'Hidden Warrens':         'card-hiddenwarrens',
-  'Lookouts':               'card-lookouts',
-  'Mice-in-a-Bush':         'card-miceinabush',
-  'Mouse Squires':          'card-mousesquires',
-  'Rabbit Squires':         'card-rabbitsquires',
-  'Raiding Party':          'card-raidingparty',
-  'Riversteads':            'card-riversteads',
-  'Shadow Council':         'card-shadowcouncil',
-  'Silver-Tongue':          'card-silvertongue',
-  'Spy Network':            'card-spynetwork',
-  'Standard Bearer':        'card-standardbearer',
-  'Supply Train':           'card-supplytrain',
-  'Tactician':              'card-tactician',
-  'Smithy':                 'card-smithy',
+  Apprentice: "card-apprentice",
+  "Bold Leadership": "card-boldleadership",
+  "Brazen Demagogue": "card-brazendemagogue",
+  "Feather Rufflers": "card-featherrufflers",
+  "Fox Squires": "card-foxsquires",
+  "Friend of the Foxes": "card-friendofthefoxes",
+  "Friend of the Mice": "card-friendofthemice",
+  "Friend of the Rabbits": "card-friendoftherabbits",
+  "Hidden Warrens": "card-hiddenwarrens",
+  Lookouts: "card-lookouts",
+  "Mice-in-a-Bush": "card-miceinabush",
+  "Mouse Squires": "card-mousesquires",
+  "Rabbit Squires": "card-rabbitsquires",
+  "Raiding Party": "card-raidingparty",
+  Riversteads: "card-riversteads",
+  "Shadow Council": "card-shadowcouncil",
+  "Silver-Tongue": "card-silvertongue",
+  "Spy Network": "card-spynetwork",
+  "Standard Bearer": "card-standardbearer",
+  "Supply Train": "card-supplytrain",
+  Tactician: "card-tactician",
+  Smithy: "card-smithy",
 };
 
 function cdnCardUrl(cardName: string): string | null {
@@ -105,32 +105,73 @@ function cdnCardUrl(cardName: string): string | null {
   return file ? `${CDN}/${file}.webp` : null;
 }
 
-// Vite glob imports — `as: 'url'` returns a string URL per file.
+// Vite glob imports — `as: 'url'` is deprecated in favour of `query: '?url', import: 'default'`.
 //
 // Two layers:
 //   1. `raw/` — the user's private scans (gitignored). Wins when present.
 //   2. `builtin/` — original stylized SVGs shipped with the repo (fallback).
-const rawCardFiles    = import.meta.glob('./raw/cards/*.{png,jpg,jpeg,webp,svg}',        { eager: true, as: 'url' });
-const rawBoardFiles   = import.meta.glob('./raw/board/*.{png,jpg,jpeg,webp,svg}',        { eager: true, as: 'url' });
-const rawFactionFiles = import.meta.glob('./raw/factions/**/*.{png,jpg,jpeg,webp,svg}',  { eager: true, as: 'url' });
-const rawItemFiles    = import.meta.glob('./raw/items/*.{png,jpg,jpeg,webp,svg}',        { eager: true, as: 'url' });
-const rawDomFiles     = import.meta.glob('./raw/dominance/*.{png,jpg,jpeg,webp,svg}',    { eager: true, as: 'url' });
+const rawCardFiles = import.meta.glob("./raw/cards/*.{png,jpg,jpeg,webp,svg}", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const rawBoardFiles = import.meta.glob(
+  "./raw/board/*.{png,jpg,jpeg,webp,svg}",
+  { eager: true, query: "?url", import: "default" },
+);
+const rawFactionFiles = import.meta.glob(
+  "./raw/factions/**/*.{png,jpg,jpeg,webp,svg}",
+  { eager: true, query: "?url", import: "default" },
+);
+const rawItemFiles = import.meta.glob("./raw/items/*.{png,jpg,jpeg,webp,svg}", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const rawDomFiles = import.meta.glob(
+  "./raw/dominance/*.{png,jpg,jpeg,webp,svg}",
+  { eager: true, query: "?url", import: "default" },
+);
 
-const builtinCardFiles    = import.meta.glob('./builtin/cards/*.svg',        { eager: true, as: 'url' });
-const builtinBoardFiles   = import.meta.glob('./builtin/board/*.svg',        { eager: true, as: 'url' });
-const builtinFactionFiles = import.meta.glob('./builtin/factions/**/*.svg',  { eager: true, as: 'url' });
-const builtinItemFiles    = import.meta.glob('./builtin/items/*.svg',        { eager: true, as: 'url' });
-const builtinDomFiles     = import.meta.glob('./builtin/dominance/*.svg',    { eager: true, as: 'url' });
+const builtinCardFiles = import.meta.glob("./builtin/cards/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const builtinBoardFiles = import.meta.glob("./builtin/board/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const builtinFactionFiles = import.meta.glob("./builtin/factions/**/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const builtinItemFiles = import.meta.glob("./builtin/items/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const builtinDomFiles = import.meta.glob("./builtin/dominance/*.svg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
 
 function slug(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[!'"()]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[!'"()]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-function lookupIn(map: Record<string, string>, prefix: string, name: string): string | null {
+function lookupIn(
+  map: Record<string, string>,
+  prefix: string,
+  name: string,
+): string | null {
   const candidates = [
     `${prefix}${name}.png`,
     `${prefix}${name}.jpg`,
@@ -149,12 +190,21 @@ function lookup(
   builtinPrefix: string,
   name: string,
 ): string | null {
-  return lookupIn(rawMap, rawPrefix, name) ?? lookupIn(builtinMap, builtinPrefix, name);
+  return (
+    lookupIn(rawMap, rawPrefix, name) ??
+    lookupIn(builtinMap, builtinPrefix, name)
+  );
 }
 
 /** Board backdrop. */
 export function boardArt(): string | null {
-  return lookup(rawBoardFiles, './raw/board/', builtinBoardFiles, './builtin/board/', 'autumn');
+  return lookup(
+    rawBoardFiles,
+    "./raw/board/",
+    builtinBoardFiles,
+    "./builtin/board/",
+    "autumn",
+  );
 }
 
 /** Card art by Card object. Priority: raw/ → CDN → builtin/.
@@ -163,65 +213,98 @@ export function boardArt(): string | null {
 export function cardArt(card: Card): string | null {
   const suitVariantName = `${card.name} (${card.suit})`;
   return (
-    lookupIn(rawCardFiles, './raw/cards/', slug(suitVariantName)) ??
-    lookupIn(rawCardFiles, './raw/cards/', slug(card.name)) ??
+    lookupIn(rawCardFiles, "./raw/cards/", slug(suitVariantName)) ??
+    lookupIn(rawCardFiles, "./raw/cards/", slug(card.name)) ??
     cdnCardUrl(suitVariantName) ??
     cdnCardUrl(card.name) ??
-    lookupIn(builtinCardFiles, './builtin/cards/', slug(card.name))
+    lookupIn(builtinCardFiles, "./builtin/cards/", slug(card.name))
   );
 }
 
 /** Generic card back. */
 export function cardBackArt(): string | null {
-  return lookup(rawCardFiles, './raw/cards/', builtinCardFiles, './builtin/cards/', 'back');
+  return lookup(
+    rawCardFiles,
+    "./raw/cards/",
+    builtinCardFiles,
+    "./builtin/cards/",
+    "back",
+  );
 }
 
 /** Faction symbol. */
 export function factionIcon(faction: Faction): string | null {
   return lookup(
-    rawFactionFiles, `./raw/factions/${faction}/`,
-    builtinFactionFiles, `./builtin/factions/${faction}/`,
-    'icon',
+    rawFactionFiles,
+    `./raw/factions/${faction}/`,
+    builtinFactionFiles,
+    `./builtin/factions/${faction}/`,
+    "icon",
   );
 }
 
 /** Warrior token sprite. */
 export function warriorArt(faction: Faction): string | null {
   return lookup(
-    rawFactionFiles, `./raw/factions/${faction}/`,
-    builtinFactionFiles, `./builtin/factions/${faction}/`,
-    'warrior',
+    rawFactionFiles,
+    `./raw/factions/${faction}/`,
+    builtinFactionFiles,
+    `./builtin/factions/${faction}/`,
+    "warrior",
   );
 }
 
 /** Building art (e.g., 'sawmill', 'roost', 'base-fox'). */
 export function buildingArt(faction: Faction, kind: string): string | null {
   return lookup(
-    rawFactionFiles, `./raw/factions/${faction}/`,
-    builtinFactionFiles, `./builtin/factions/${faction}/`,
+    rawFactionFiles,
+    `./raw/factions/${faction}/`,
+    builtinFactionFiles,
+    `./builtin/factions/${faction}/`,
     kind,
   );
 }
 
 /** Item icon. */
 export function itemArt(kind: ItemKind): string | null {
-  return lookup(rawItemFiles, './raw/items/', builtinItemFiles, './builtin/items/', kind);
+  return lookup(
+    rawItemFiles,
+    "./raw/items/",
+    builtinItemFiles,
+    "./builtin/items/",
+    kind,
+  );
 }
 
 /** Dominance-card art by suit. */
-export function dominanceArt(suit: Suit | 'bird'): string | null {
-  return lookup(rawDomFiles, './raw/dominance/', builtinDomFiles, './builtin/dominance/', suit);
+export function dominanceArt(suit: Suit | "bird"): string | null {
+  return lookup(
+    rawDomFiles,
+    "./raw/dominance/",
+    builtinDomFiles,
+    "./builtin/dominance/",
+    suit,
+  );
 }
 
 /** Counts of asset files for the status indicator. */
 export function assetReport(): {
-  cards: number; factionArt: number; items: number; board: boolean;
-  rawCards: number; rawFaction: number; rawItems: number;
+  cards: number;
+  factionArt: number;
+  items: number;
+  board: boolean;
+  rawCards: number;
+  rawFaction: number;
+  rawItems: number;
 } {
   return {
-    cards: Object.keys(rawCardFiles).length + Object.keys(builtinCardFiles).length,
-    factionArt: Object.keys(rawFactionFiles).length + Object.keys(builtinFactionFiles).length,
-    items: Object.keys(rawItemFiles).length + Object.keys(builtinItemFiles).length,
+    cards:
+      Object.keys(rawCardFiles).length + Object.keys(builtinCardFiles).length,
+    factionArt:
+      Object.keys(rawFactionFiles).length +
+      Object.keys(builtinFactionFiles).length,
+    items:
+      Object.keys(rawItemFiles).length + Object.keys(builtinItemFiles).length,
     board: boardArt() !== null,
     rawCards: Object.keys(rawCardFiles).length,
     rawFaction: Object.keys(rawFactionFiles).length,
