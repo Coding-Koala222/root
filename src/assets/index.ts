@@ -114,50 +114,50 @@ const rawCardFiles = import.meta.glob("./raw/cards/*.{png,jpg,jpeg,webp,svg}", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const rawBoardFiles = import.meta.glob(
   "./raw/board/*.{png,jpg,jpeg,webp,svg}",
   { eager: true, query: "?url", import: "default" },
-);
+) as Record<string, string>;
 const rawFactionFiles = import.meta.glob(
   "./raw/factions/**/*.{png,jpg,jpeg,webp,svg}",
   { eager: true, query: "?url", import: "default" },
-);
+) as Record<string, string>;
 const rawItemFiles = import.meta.glob("./raw/items/*.{png,jpg,jpeg,webp,svg}", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const rawDomFiles = import.meta.glob(
   "./raw/dominance/*.{png,jpg,jpeg,webp,svg}",
   { eager: true, query: "?url", import: "default" },
-);
+) as Record<string, string>;
 
 const builtinCardFiles = import.meta.glob("./builtin/cards/*.svg", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const builtinBoardFiles = import.meta.glob("./builtin/board/*.svg", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const builtinFactionFiles = import.meta.glob("./builtin/factions/**/*.svg", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const builtinItemFiles = import.meta.glob("./builtin/items/*.svg", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 const builtinDomFiles = import.meta.glob("./builtin/dominance/*.svg", {
   eager: true,
   query: "?url",
   import: "default",
-});
+}) as Record<string, string>;
 
 function slug(name: string): string {
   return name
