@@ -228,6 +228,39 @@ describe("resolveCombat (state reducer)", () => {
     expect(after.factions.eyrie!.roosts.length).toBe(roostsOnBoard);
   });
 
+  it("removes clearing from alliance.sympathy when sympathy token is destroyed", () => {
+    // Clearing 1 is fox. Alliance has sympathy there but no warriors/buildings,
+    // so the defenseless attacker hit flows straight to the token.
+    let s = newGame({ seed: 1 });
+    s = {
+      ...s,
+      factions: {
+        ...s.factions,
+        alliance: { ...s.factions.alliance!, sympathy: [1] },
+      },
+      map: {
+        clearings: {
+          ...s.map.clearings,
+          1: {
+            warriors: { marquise: 10 },
+            buildings: [],
+            tokens: [{ faction: "alliance", kind: "sympathy" }],
+            vagabondHere: false,
+          },
+        },
+      },
+    };
+    const after = resolveCombat(s, {
+      clearing: 1,
+      attacker: "marquise",
+      defender: "alliance",
+    });
+    const sympathyOnBoard = Object.values(after.map.clearings)
+      .flatMap((cl) => cl.tokens)
+      .filter((t) => t.faction === "alliance" && t.kind === "sympathy").length;
+    expect(after.factions.alliance!.sympathy.length).toBe(sympathyOnBoard);
+  });
+
   it("clears alliance.bases entry when base is destroyed", () => {
     // Clearing 1 is fox suit. Defender is alliance (defenseless), guaranteeing ≥1 hit.
     let s = newGame({ seed: 1 });

@@ -438,6 +438,16 @@ export function resolveCombat(
       params.attacker,
       outcome.attackerPiecesRemoved.tokens,
     );
+    // Sync Alliance sympathy list. All Alliance tokens are sympathy tokens,
+    // so any removal means this clearing's sympathy marker is gone.
+    for (const [side, n] of [
+      [params.defender, outcome.defenderPiecesRemoved.tokens],
+      [params.attacker, outcome.attackerPiecesRemoved.tokens],
+    ] as const) {
+      if (n <= 0 || side !== "alliance" || !draft.factions.alliance) continue;
+      const idx = draft.factions.alliance.sympathy.indexOf(params.clearing);
+      if (idx >= 0) draft.factions.alliance.sympathy.splice(idx, 1);
+    }
 
     // Score VP from removed enemy cardboard.
     draft.scores[params.attacker] =
