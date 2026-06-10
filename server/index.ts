@@ -20,6 +20,7 @@ import type { Room } from './room';
 import { makeStaticHandler } from './static';
 import { handleAdmin, ADMIN_FEATURE_ENABLED } from './admin';
 import type { ClientMessage, ServerMessage } from './protocol';
+import { metrics } from './telemetry';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const DIST_DIR = resolve(process.env.DIST_DIR ?? './dist');
@@ -155,8 +156,9 @@ function attachToRoom(ws: WebSocket, room: Room): void {
     }
   });
 
-  ws.on('close', () => room.disconnect(clientId));
-  ws.on('error', () => room.disconnect(clientId));
+  metrics.increment('root.ws.connected');
+  ws.on('close', () => { room.disconnect(clientId); metrics.increment('root.ws.disconnected'); });
+  ws.on('error', () => { room.disconnect(clientId); metrics.increment('root.ws.disconnected'); });
 }
 
 function ifaceIp(): string {
@@ -167,6 +169,13 @@ function ifaceIp(): string {
   }
   return 'localhost';
 }
+
+// ─── Periodic gauges ────────────────────────────────────────────────────────
+
+setInterval(() => {
+  metrics.gauge('root.rooms.active', manager.roomCount());
+  metrics.gauge('root.players.online', manager.onlinePlayerCount());
+}, 30_000);
 
 // ─── Stale-room cleanup ─────────────────────────────────────────────────────
 

@@ -37,4 +37,4 @@ EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:${PORT}/healthz || exit 1
 
-CMD ["npx", "tsx", "server/index.ts"]
+CMD ["npx", "tsx", "server/start.ts"]

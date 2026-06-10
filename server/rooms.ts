@@ -5,6 +5,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync, unlinkSync, exists
 import { join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { Room, type RoomSnapshot } from './room';
+import { metrics } from './telemetry';
 
 const ROOM_ID_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'; // no l, i, o, 0, 1 to avoid confusion
 const ROOM_ID_LEN = 6;
@@ -45,6 +46,7 @@ export class RoomManager {
     room.onPersist((r) => this.schedulePersist(r));
     this.rooms.set(id, room);
     this.schedulePersist(room);
+    metrics.increment('root.room.created');
     return room;
   }
 
@@ -65,6 +67,7 @@ export class RoomManager {
     try { if (existsSync(file)) unlinkSync(file); } catch { /* ignore */ }
     const pending = this.pendingPersist.get(id);
     if (pending) { clearTimeout(pending); this.pendingPersist.delete(id); }
+    metrics.increment('root.room.deleted');
     return true;
   }
 
@@ -139,8 +142,18 @@ export class RoomManager {
         removed.push(id);
       }
     }
+    if (removed.length > 0) metrics.increment('root.room.pruned', { count: removed.length });
     return { removed, kept: this.rooms.size };
   }
+
+  /** Total online (connected WebSocket) players across all rooms. */
+  onlinePlayerCount(): number {
+    let n = 0;
+    for (const room of this.rooms.values()) n += room.onlinePlayerCount();
+    return n;
+  }
+
+  roomCount(): number { return this.rooms.size; }
 }
 
 export const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;

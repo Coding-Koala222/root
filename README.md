@@ -103,6 +103,10 @@ docker compose pull && docker compose up -d
 
 ## Environment variables
 
+Copy `.env.example` to `.env` and edit. `docker compose` and the dev scripts both read it automatically.
+
+### Server
+
 | Variable            | Default        | Purpose                                              |
 | ------------------- | -------------- | ---------------------------------------------------- |
 | `PORT`              | `8787`         | HTTP + WebSocket port                                |
@@ -110,6 +114,40 @@ docker compose pull && docker compose up -d
 | `DATA_DIR`          | `./data/rooms` | Where to write per-room JSON files                   |
 | `MAX_ROOM_AGE_DAYS` | `90`           | Rooms idle longer than this are auto-pruned          |
 | `ADMIN_PASSWORD`    | _unset_        | Enables `/admin`. Unset → admin disabled (503)       |
+
+### Datadog (optional)
+
+Telemetry is off by default. Set `DD_TRACE_ENABLED=true` and run a [Datadog Agent](https://docs.datadoghq.com/agent/) to enable APM traces and custom metrics.
+
+In the Docker Compose setup, `DD_AGENT_HOST` is hardcoded to `host.docker.internal` (with `extra_hosts: host-gateway` for Linux) so the container always reaches the agent on the Docker host. The other variables default via shell substitution in `docker-compose.yml` and can be overridden in `.env`.
+
+| Variable              | Compose default       | Purpose                                           |
+| --------------------- | --------------------- | ------------------------------------------------- |
+| `DD_TRACE_ENABLED`    | `true`                | Set to `false` to disable. Any non-`true` → off   |
+| `DD_AGENT_HOST`       | `host.docker.internal`| Hostname of the Datadog Agent                     |
+| `DD_TRACE_AGENT_PORT` | `8126`                | APM trace port on the agent                       |
+| `DD_SITE`             | `datadoghq.com`       | Datadog intake site                               |
+| `DD_SERVICE`          | `root-game`           | Service name shown in Datadog                     |
+| `DD_ENV`              | `home`                | Environment tag (`production`, `staging`, …)      |
+| `DD_VERSION`          | _unset_               | Version tag, e.g. `1.0.0`                         |
+
+**Custom metrics emitted:**
+
+| Metric                  | Type      | Tags                              |
+| ----------------------- | --------- | --------------------------------- |
+| `root.room.created`     | count     | —                                 |
+| `root.room.deleted`     | count     | —                                 |
+| `root.room.pruned`      | count     | `count:N`                         |
+| `root.game.started`     | count     | `factions:<order>`                |
+| `root.game.over`        | count     | `winner:<faction>`, `via:<reason>`|
+| `root.action.applied`   | count     | `kind:<faction_action>`           |
+| `root.ws.connected`     | count     | —                                 |
+| `root.ws.disconnected`  | count     | —                                 |
+| `root.bot.turn_ms`      | histogram | —                                 |
+| `root.rooms.active`     | gauge     | — (reported every 30 s)           |
+| `root.players.online`   | gauge     | — (reported every 30 s)           |
+
+HTTP requests are traced automatically via dd-trace auto-instrumentation (no manual spans required).
 
 ## License
 

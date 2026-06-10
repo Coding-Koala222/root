@@ -10,14 +10,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "server": "tsx server/index.ts",
-    "host": "concurrently -k -n vite,server -c green,cyan \"vite --host\" \"tsx server/index.ts\"",
+    "server": "tsx server/start.ts",
+    "host": "concurrently -k -n vite,server -c green,cyan \"vite --host\" \"tsx server/start.ts\"",
     "download-assets": "node scripts/download-assets.mjs",
     "prune-stale": "node scripts/prune-stale.mjs",
     "release": "node -e \"const v=require('./package.json').version; const r='docker.kepi.site/root-game'; require('child_process').execSync('docker buildx build --platform linux/amd64,linux/arm64 --tag '+r+':'+v+' --tag '+r+':latest --push .', {stdio:'inherit'});\""
   },
   "dependencies": {
     "concurrently": "^9.2.1",
+    "dd-trace": "^5.106.0",
     "immer": "^10.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

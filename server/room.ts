@@ -2,6 +2,7 @@
 // Each public-server instance owns many rooms (see rooms.ts).
 
 import type { GameState, Action, Faction } from '../src/engine/types';
+import { metrics } from './telemetry';
 import { ALL_FACTIONS } from '../src/engine/types';
 import { newGame, reduce } from '../src/engine/state';
 import { startGame, checkVictory } from '../src/engine/loop';
@@ -269,6 +270,7 @@ export class Room {
     });
     this.state = startGame(performSetup(base));
     this.started = true;
+    metrics.increment('root.game.started', { factions: this.state.factionOrder.join(',') });
     this.broadcastLobby();
     this.broadcastState();
     this.scheduleAITurn();
@@ -305,6 +307,8 @@ export class Room {
     const next = this.reduceFull(this.state, action);
     if (next === this.state) return 'action had no effect';
     this.state = next;
+    metrics.increment('root.action.applied', { kind: action.kind.replace('.', '_') });
+    if (next.winner) metrics.increment('root.game.over', { winner: next.winner.faction, via: next.winner.via });
     this.broadcastState();
     this.scheduleAITurn();
     this.touched();
@@ -339,11 +343,13 @@ export class Room {
     }
     const action = pickAction(this.state);
     if (!action) return;
+    const t0 = Date.now();
     let next = this.reduceFull(this.state, action);
     if (next === this.state) {
       next = this.reduceFull(this.state, { kind: 'system.advancePhase' });
       if (next === this.state) return;
     }
+    metrics.histogram('root.bot.turn_ms', Date.now() - t0);
     this.state = next;
     this.broadcastState();
     this.touched();
@@ -405,6 +411,12 @@ export class Room {
 
   hasAnyClaimedSeat(): boolean {
     return ALL_FACTIONS.some(f => this.seats[f] !== null);
+  }
+
+  onlinePlayerCount(): number {
+    let n = 0;
+    for (const p of this.players.values()) if (p.online) n++;
+    return n;
   }
 
   dispose(): void {
