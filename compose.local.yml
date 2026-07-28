@@ -1,0 +1,37 @@
+x-dd-env: &dd-env
+  DD_ENV: ${DD_ENV:-home}
+  DD_AGENT_HOST: host.docker.internal
+  DD_TRACE_AGENT_PORT: ${DD_TRACE_AGENT_PORT:-8126}
+  DD_TRACE_ENABLED: ${DD_TRACE_ENABLED:-true}
+  DD_SITE: ${DD_SITE:-datadoghq.com}
+
+services:
+  root:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: root-game-local
+    ports:
+      - "8787:8787"
+    volumes:
+      - root-data-local:/app/data/rooms
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      <<: *dd-env
+      PORT: 8787
+      DATA_DIR: /app/data/rooms
+      MAX_ROOM_AGE_DAYS: 90
+      DD_SERVICE: root-game
+      DD_VERSION: ${DD_VERSION:-local}
+    env_file:
+      - path: .env
+        required: false
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8787/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  root-data-local:

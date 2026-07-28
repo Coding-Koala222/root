@@ -26,7 +26,7 @@ ENV DIST_DIR=/app/dist
 
 COPY package*.json ./
 # Install production deps natively for the target platform (not copied from builder).
-RUN npm ci --omit=dev && npm install --no-save tsx
+RUN npm ci --omit=dev --ignore-scripts && npm install --no-save --ignore-scripts tsx
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/src ./src
