@@ -1,7 +1,6 @@
 x-dd-env: &dd-env
   DD_ENV: ${DD_ENV:-home}
-  DD_AGENT_HOST: host.docker.internal
-  DD_TRACE_AGENT_PORT: ${DD_TRACE_AGENT_PORT:-8126}
+  DD_TRACE_AGENT_URL: unix:///var/run/datadog/apm.socket
   DD_TRACE_ENABLED: ${DD_TRACE_ENABLED:-true}
   DD_SITE: ${DD_SITE:-datadoghq.com}
 
@@ -15,8 +14,7 @@ services:
       - "8787:8787"
     volumes:
       - root-data:/app/data/rooms
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - /var/run/datadog:/var/run/datadog:ro
     environment:
       <<: *dd-env
       PORT: 8787
