@@ -19,10 +19,13 @@ import { RoomManager, NINETY_DAYS_MS } from './rooms';
 import type { Room } from './room';
 import { makeStaticHandler } from './static';
 import { handleAdmin, ADMIN_FEATURE_ENABLED } from './admin';
+import { handleSiteAuth, hasSiteAccess, requireSiteAccess } from './site-auth';
 import type { ClientMessage, ServerMessage } from './protocol';
 import { metrics } from './telemetry';
 
 const PORT = Number(process.env.PORT ?? 8787);
+const DEVICE_IP = process.env.DEVICE_IP ?? ifaceIp();
+const EXTERNAL_PORT = Number(process.env.EXTERNAL_PORT ?? PORT);
 const DIST_DIR = resolve(process.env.DIST_DIR ?? './dist');
 const DATA_DIR = resolve(process.env.DATA_DIR ?? './data/rooms');
 const MAX_ROOM_AGE_DAYS = Number(process.env.MAX_ROOM_AGE_DAYS ?? 90);
@@ -48,6 +51,12 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   const path = url.pathname;
 
   if (path === '/healthz') { res.writeHead(200); res.end('ok'); return; }
+
+  if (await handleSiteAuth(req, res, path)) return;
+
+  if ((path.startsWith('/api/rooms') || path.startsWith('/api/admin/') || path === '/ws') && !requireSiteAccess(req, res)) {
+    return;
+  }
 
   // Admin endpoints (password-protected). Tried first so they win over the
   // SPA fallback.
@@ -79,6 +88,10 @@ httpServer.on('upgrade', (req, socket, head) => {
   if (!req.url) { socket.destroy(); return; }
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname !== '/ws') { socket.destroy(); return; }
+  if (!hasSiteAccess(req)) {
+    socket.destroy();
+    return;
+  }
   const roomId = url.searchParams.get('room');
   if (!roomId) { socket.destroy(); return; }
   const room = manager.get(roomId);
@@ -203,14 +216,13 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 httpServer.listen(PORT, () => {
-  const host = ifaceIp();
   console.log(
     `\n  Root server listening.\n` +
-    `  Local:    http://localhost:${PORT}/\n` +
-    `  LAN/web:  http://${host}:${PORT}/\n` +
+    `  Local:    http://localhost:${EXTERNAL_PORT}/\n` +
+    `  LAN/web:  http://${DEVICE_IP}:${EXTERNAL_PORT}/\n` +
     `  Data dir: ${DATA_DIR}\n` +
     `  Stale rooms older than ${MAX_ROOM_AGE_DAYS} days are pruned every 6h.\n` +
-    `  Admin:    ${ADMIN_FEATURE_ENABLED ? `enabled — visit http://${host}:${PORT}/admin` : 'disabled (set ADMIN_PASSWORD to enable)'}\n`,
+    `  Admin:    ${ADMIN_FEATURE_ENABLED ? `enabled — visit http://${DEVICE_IP}:${EXTERNAL_PORT}/admin` : 'disabled (set ADMIN_PASSWORD to enable)'}\n`,
   );
 });
 

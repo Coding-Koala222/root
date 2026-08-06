@@ -118,8 +118,8 @@ export function marquiseReducer(state: GameState, action: Action): GameState {
         const clMeta = AUTUMN_MAP.clearings.find(c => c.id === a.clearing)!;
         if (!rules(draft, a.clearing)) return;
         // Enemy tokens that would block? Skipping detailed hostile-token check.
-        const totalSlots = clMeta.buildingSlots + (cl.extraBuildingSlots ?? 0);
-        const usedSlots = cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length;
+        const totalSlots = clMeta.buildingSlots;
+        const usedSlots = cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length + (clMeta.hasRuin && !cl.ruinExplored ? 1 : 0);
         if (usedSlots >= totalSlots) return;
         if (m.buildings[a.building] >= 6) return;
         const cost = buildCost(m.buildings[a.building]);
@@ -397,7 +397,7 @@ export function marquiseLegalActions(state: GameState): Action[] {
         if (m.buildings[kind] >= 6) continue;
         for (const c of AUTUMN_MAP.clearings) {
           const cl = state.map.clearings[c.id]!;
-          if (cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length >= c.buildingSlots + (cl.extraBuildingSlots ?? 0)) continue;
+          if (cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length + (c.hasRuin && !cl.ruinExplored ? 1 : 0) >= c.buildingSlots) continue;
           if (!rules(state, c.id)) continue;
           const cost = buildCost(m.buildings[kind]);
           if (reachableSawmillWood(state, c.id).length < cost) continue;

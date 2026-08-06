@@ -248,8 +248,8 @@ export function eyrieReducer(state: GameState, action: Action): GameState {
         if (!eyrieRules(draft, a.clearing)) return;
         const cl = draft.map.clearings[a.clearing]!;
         if (cl.buildings.some(b => b.faction === 'eyrie' && b.kind === 'roost')) return;
-        const used = cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length;
-        if (used >= meta.buildingSlots + (cl.extraBuildingSlots ?? 0)) return;
+        const used = cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length + (meta.hasRuin && !cl.ruinExplored ? 1 : 0);
+        if (used >= meta.buildingSlots) return;
         if (e.roosts.length >= 7) return;
         cl.buildings.push({ faction: 'eyrie', kind: 'roost' });
         e.roosts.push(a.clearing);
@@ -529,7 +529,7 @@ export function eyrieLegalActions(state: GameState): Action[] {
           if (!eyrieRules(state, cm.id)) continue;
           if (cl.buildings.some(b => b.faction === 'eyrie' && b.kind === 'roost')) continue;
           const used = cl.buildings.length + cl.tokens.filter(t => t.kind === 'keep').length;
-          if (used < cm.buildingSlots + (cl.extraBuildingSlots ?? 0) && e.roosts.length < 7) {
+          if (used < cm.buildingSlots && e.roosts.length < 7) {
             out.push({ kind: 'eyrie.executeBuild', clearing: cm.id });
           }
         }
