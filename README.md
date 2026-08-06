@@ -105,6 +105,7 @@ docker run -d
   -e ADMIN_PASSWORD=<admin-secret>
   -e SITE_PASSWORD=<site-secret>
   root-board-game
+  && docker logs --follow Root-Board-Game-Container
 ```
 
 Replace:
@@ -136,7 +137,7 @@ docker run -d
 
 The app is now available on your chosen port.
 
-Local URL:    http://localhost:`<external-port>`
+Local URL:    http://localhost: `<external-port>`
 
 LAN/web URL:  See console output
 
