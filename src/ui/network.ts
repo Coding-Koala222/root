@@ -138,6 +138,9 @@ class NetClient {
   chooseVagabondCharacter(character: 'thief' | 'tinker' | 'ranger'): void {
     this.send({ kind: 'chooseVagabondCharacter', character });
   }
+  setAutoFillBots(autoFillBots: boolean): void {
+    this.send({ kind: 'setAutoFillBots', autoFillBots });
+  }
 
   getState(): NetState { return this.state; }
 }
@@ -179,8 +182,12 @@ export function autoConnectFromUrl(): void {
 
 // ─── REST helpers ───────────────────────────────────────────────────────────
 
-export async function createRoom(): Promise<string> {
-  const res = await fetch('/api/rooms', { method: 'POST' });
+export async function createRoom(autoFillBots = true): Promise<string> {
+  const res = await fetch('/api/rooms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ autoFillBots }),
+  });
   if (!res.ok) throw new Error(`Failed to create room (HTTP ${res.status})`);
   const body = await res.json() as { id: string };
   return body.id;

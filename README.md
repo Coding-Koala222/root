@@ -175,10 +175,10 @@ LAN/web URL:  See console output
 
 1. Visit the homepage → **Create game**. A 6-character room code is allocated and the URL updates to `/r/<code>`.
 2. Share the link. Others click it or paste the code into **Join a game**.
-3. Each player claims a faction seat. Unclaimed seats become AI bots when the game starts.
+3. When creating the room, choose whether unclaimed seats should be auto-filled with bots. If bot fill is off, the empty seats stay empty.
 4. The server validates every action against the player's seat and broadcasts state to all clients.
 
-If a player closes the tab their seat is freed and the AI takes over. They can rejoin from the same URL and reclaim any free seat.
+If a player closes the tab in a bot-filled room, their seat is freed and the AI takes over. If bot fill is off, the seat stays empty instead. Players can rejoin from the same URL and reclaim any free seat.
 
 ## Card art
 

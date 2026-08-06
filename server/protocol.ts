@@ -16,8 +16,10 @@ export interface PlayerInfo {
 
 export interface LobbyState {
   players: PlayerInfo[];
-  /** Map of faction → clientId who claimed it (or null = AI bot fill). */
+  /** Map of faction → clientId who claimed it (or null = empty seat). */
   seats: Record<Faction, ClientId | null>;
+  /** Whether unclaimed seats should be filled with bots. */
+  autoFillBots: boolean;
   /** Vagabond character (only meaningful if vagabond seat is claimed). */
   vagabondCharacter: VagabondCharacter;
   started: boolean;
@@ -30,6 +32,7 @@ export type ClientMessage =
   | { kind: 'claimSeat'; faction: Faction; vagabondCharacter?: VagabondCharacter }
   | { kind: 'releaseSeat' }
   | { kind: 'chooseVagabondCharacter'; character: VagabondCharacter }
+  | { kind: 'setAutoFillBots'; autoFillBots: boolean }
   | { kind: 'startGame' }
   | { kind: 'action'; action: Action }
   | { kind: 'newGame' }

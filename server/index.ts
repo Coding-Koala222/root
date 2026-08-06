@@ -64,7 +64,15 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
 
   // POST /api/rooms — create a new room
   if (req.method === 'POST' && path === '/api/rooms') {
-    const room = manager.create();
+    let body: { autoFillBots?: boolean } = {};
+    try {
+      const raw = await readJsonBody(req);
+      body = (raw ?? {}) as typeof body;
+    } catch {
+      sendJson(res, 400, { error: 'bad json' });
+      return;
+    }
+    const room = manager.create({ autoFillBots: body.autoFillBots ?? true });
     sendJson(res, 201, { id: room.id });
     return;
   }
@@ -80,6 +88,25 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   if (staticHandler(req, res)) return;
   res.writeHead(503);
   res.end('UI bundle not found at ' + DIST_DIR + ' — run `npm run build`.');
+}
+
+async function readJsonBody(req: http.IncomingMessage, maxBytes = 64 * 1024): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > maxBytes) { reject(new Error('body too large')); req.destroy(); return; }
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (!raw) return resolve({});
+      try { resolve(JSON.parse(raw)); }
+      catch { reject(new Error('bad json')); }
+    });
+    req.on('error', reject);
+  });
 }
 
 const wss = new WebSocketServer({ noServer: true });
@@ -150,6 +177,11 @@ function attachToRoom(ws: WebSocket, room: Room): void {
       case 'chooseVagabondCharacter':
         room.chooseVagabondCharacter(msg.character);
         break;
+      case 'setAutoFillBots': {
+        const err = room.setAutoFillBots(clientId, msg.autoFillBots);
+        if (err) send(ws, { kind: 'error', message: err });
+        break;
+      }
       case 'startGame': {
         const err = room.startGame();
         if (err) send(ws, { kind: 'error', message: err });

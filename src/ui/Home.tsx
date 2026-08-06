@@ -33,6 +33,7 @@ export function Home({ onStartOffline, site }: Props) {
   const [joinValue, setJoinValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [passwordValue, setPasswordValue] = useState('');
+  const [autoFillBots, setAutoFillBots] = useState(true);
   const [assetStatus, setAssetStatus] = useState<string | null>(null);
   const [assetError, setAssetError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -78,7 +79,7 @@ export function Home({ onStartOffline, site }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const id = await createRoom();
+      const id = await createRoom(autoFillBots);
       navigateToRoom(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -107,12 +108,12 @@ export function Home({ onStartOffline, site }: Props) {
   return (
     <div className="home">
       <h1 className="home-title">Root</h1>
-      <p className="home-tagline">A woodland faction war. AI plays the empty seats.</p>
+      <p className="home-tagline">A woodland faction war. Play solo, with 2 or 3 humans, or fill all 4 seats with bots.</p>
 
       {site.enabled && !site.authed && (
         <div className="home-card primary home-lock-card">
           <h2>Site password required</h2>
-          <p>Enter the maintainer password to unlock the rest of the pages on this browser.</p>
+          <p>Enter the site password to unlock the rest of the pages on this browser.</p>
           <input
             className="home-input"
             type="password"
@@ -135,7 +136,15 @@ export function Home({ onStartOffline, site }: Props) {
           <div className="home-cards">
             <div className="home-card primary">
               <h2>Host a new game</h2>
-              <p>Create a room, then share the link. Up to 4 humans + AI fillers.</p>
+              <p>Create a room, then share the link. You can decide whether empty seats should fill with bots.</p>
+              <label className="home-toggle">
+                <input
+                  type="checkbox"
+                  checked={autoFillBots}
+                  onChange={(e) => setAutoFillBots(e.target.checked)}
+                />
+                Auto-fill unclaimed seats with bots
+              </label>
               <button className="btn primary" onClick={onCreate} disabled={busy}>
                 {busy ? '…' : 'Create game'}
               </button>
